@@ -39,7 +39,7 @@ app.post('/todos',function(req,res){
   body = _.pick(body,'description','completed');
   if(!_.isString(body.description)
     ||!_.isBoolean(body.completed)
-    || body.description.trim().lenght===0){
+    || body.description.trim().length===0){
     res.status(404).send();
   }
   else{
