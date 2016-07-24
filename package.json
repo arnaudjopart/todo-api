@@ -18,6 +18,7 @@
   "homepage": "https://github.com/arnaudjopart/todo-api#readme",
   "dependencies": {
     "body-parser": "^1.13.3",
-    "express": "^4.13.3"
+    "express": "^4.13.3",
+    "underscore":"^1.8.3"
   }
 }

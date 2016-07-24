@@ -1,9 +1,12 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
+
 var app = express();
 
 var todos =[];
 var todNextId=1;
+
 
 app.use(bodyParser.json());
 
@@ -13,12 +16,9 @@ app.get('/todos',function(req,res){
 
 app.get('/todos/:id',function(req,res){
   var id = parseInt(req.params.id,10);
-  var matchedTodo;
-  todos.forEach(function(todo){
-    if (id === todo.id){
-      matchedTodo = todo;
-    }
-  });
+
+  var matchedTodo = _.findWhere(todos,id);
+
   if(matchedTodo){
     res.json(matchedTodo);
     console.log("todo found");
@@ -36,10 +36,18 @@ app.get('/',function(req,res){
 
 app.post('/todos',function(req,res){
   var body = req.body;
-  body.id = todNextId++;
-  console.log('New Todo added - description: '+body.description);
-  todos.push(body);
-  res.json(body);
+  if(!_.isString(body.description)
+    ||!_.isBoolean(body.completed)
+    || body.description.trim().lenght===0){
+    res.status(404).send();
+  }
+  else{
+    body.id = todNextId++;
+    console.log('New Todo added - description: '+body.description);
+    todos.push(body);
+    res.json(body);
+  }
+
 
 });
 app.listen(PORT,function(){
