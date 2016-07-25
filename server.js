@@ -76,9 +76,9 @@ app.post('/todos',function(req,res){
   db.todo.create(body).then(function(resolveData){
     console.log("todo created - "+resolveData.description);
     res.json(resolveData);
-  },fuction(e){
+  },function(e){
     console.log(e);
-    res.status(400).json(e)):
+    res.status(400).json(e);
   }).catch(function(e){
     console.log(e);
   });
