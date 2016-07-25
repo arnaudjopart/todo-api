@@ -90,6 +90,7 @@ app.delete('/todos/:id',function(req,res){
 
 app.put('/todos/:id',function(req,res){
   var body = req.body;
+
   body = _.pick(body,'description','completed');
   var validAttributes={};
   if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
