@@ -17,7 +17,7 @@ app.get('/todos',function(req,res){
     filteredTodos = _.where(filteredTodos,{completed:true});
     }
 
-  }else if (queryParams.hasOwnProperty('completed')
+  else if (queryParams.hasOwnProperty('completed')
     && queryParams.completed === 'false'){
     filteredTodos = _.where(filteredTodos,{completed:false});
 
@@ -26,7 +26,7 @@ app.get('/todos',function(req,res){
 
   if(queryParams.hasOwnProperty('q') && queryParams.q.trim().length>0){
     filteredTodos= _.filter(filteredTodos,function(todo){
-        return todo.description..toLowerCase()indexOf(queryParams.q.toLowerCase())>-1;
+        return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase())>-1;
     });
   }
   res.json(filteredTodos);
