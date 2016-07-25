@@ -90,32 +90,48 @@ app.delete('/todos/:id',function(req,res){
 
 app.put('/todos/:id',function(req,res){
   var body = req.body;
+  var todoId = parseInt(req.params.id,10);
 
   body = _.pick(body,'description','completed');
   var validAttributes={};
-  if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+  if(body.hasOwnProperty('completed')){
     validAttributes.completed = body.completed;
-  }else if(body.hasOwnProperty('completed')){
-    res.status(400).send();
-  };
-
-  if(body.hasOwnProperty('description') && body.description.trim().length>0){
+  }
+  if(body.hasOwnProperty('description')){
     validAttributes.description = body.description;
   }else if(body.hasOwnProperty('description')){
     res.status(400).send();
   };
 
-  var todoId = parseInt(req.params.id,10);
+  db.todo.findById(todoId).then(
+    function(todo){
+      if(!!todo){
+        return todo.update(validAttributes);
+      }else{
+        res.status(404).send();
+      }
+    },function(e){
+      res.status(500).send();
+    }).then(function(todo){
+      res.json(todo.toJSON());
+    },function(e){
+      res.status(500).json(e);
+    }).catch(function(e){
 
-  var matchedTodo = _.findWhere(todos,{id:todoId});
-  if(matchedTodo){
-    _.extend(matchedTodo,validAttributes);
-    res.json(matchedTodo);
-  }else{
-    res.status(404).json({"error":"no todo found with that id"});
-  }
+    });
 
-})
+  //
+  // var todoId = parseInt(req.params.id,10);
+  //
+  // var matchedTodo = _.findWhere(todos,{id:todoId});
+  // if(matchedTodo){
+  //   _.extend(matchedTodo,validAttributes);
+  //   res.json(matchedTodo);
+  // }else{
+  //   res.status(404).json({"error":"no todo found with that id"});
+  // }
+
+});
 
 db.sequelize.sync().then(function(){
   app.listen(PORT,function(){
