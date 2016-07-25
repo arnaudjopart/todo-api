@@ -1,7 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
-
+var db = require('./db.js');
 var app = express();
 
 var todos =[];
@@ -12,7 +12,23 @@ app.use(bodyParser.json());
 
 app.get('/todos',function(req,res){
   var queryParams = req.query;
-  var filteredTodos = todos;
+  // if(queryParams.hasOwnProperty('completed')){
+  //   var filteredTodos = db.todo.findAll({
+  //     where:{
+  //       completed:queryParams.completed
+  //     }
+  //   });
+  // }
+  //
+  // if(queryParams.hasOwnProperty('q') && queryParams.q.trim().length>0){
+  //
+  // }
+  //   filteredTodos= _.filter(filteredTodos,function(todo){
+  //       return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase())>-1;
+  //   });
+  // }
+
+
   if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
     filteredTodos = _.where(filteredTodos,{completed:true});
     }
@@ -35,6 +51,7 @@ app.get('/todos',function(req,res){
 });
 
 app.get('/todos/:id',function(req,res){
+
   var todoId = parseInt(req.params.id,10);
 
   var matchedTodo = _.findWhere(todos,{id:todoId});
@@ -56,19 +73,15 @@ app.get('/',function(req,res){
 
 app.post('/todos',function(req,res){
   var body = req.body;
-  body = _.pick(body,'description','completed');
-  if(!_.isString(body.description)
-    ||!_.isBoolean(body.completed)
-    || body.description.trim().length===0){
-    res.status(404).send();
-  }
-  else{
-    body.id = todNextId++;
-    console.log('New Todo added - description: '+body.description);
-    todos.push(body);
-    res.json(body);
-  }
-
+  db.todo.create(body).then(function(resolveData){
+    console.log("todo created - "+resolveData.description);
+    res.json(resolveData);
+  },fuction(e){
+    console.log(e);
+    res.status(400).json(e)):
+  }).catch(function(e){
+    console.log(e);
+  });
 
 });
 
@@ -112,6 +125,9 @@ app.put('/todos/:id',function(req,res){
   }
 
 })
-app.listen(PORT,function(){
-  console.log('Express listening on Port '+PORT+'!');
-})
+
+db.sequelize.sync().then(function(){
+  app.listen(PORT,function(){
+    console.log('Express listening on Port '+PORT+'!');
+  });
+});
