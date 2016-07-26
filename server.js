@@ -131,7 +131,7 @@ app.post('/user/login',function(req,res){
 
     db.user.authenticate(body).then(
       function(user){
-        res.send(user.toPublicJson());
+        res.header('Auth',user.generateToken('authentication')).send(user.toPublicJson());
       }, function(e){
 
         res.status(401).json({error:"error"});
