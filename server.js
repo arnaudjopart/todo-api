@@ -2,6 +2,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
+var bcrypt = require('bcrypt');
+
 var app = express();
 
 var todos =[];
@@ -122,10 +124,42 @@ app.put('/todos/:id',function(req,res){
 
 });
 
+app.post('/user/login',function(req,res){
+  var body = req.body;
+
+  body = _.pick(body,'email','password');
+  if(body.hasOwnProperty('email')&& body.hasOwnProperty('password')){
+
+    db.user.findOne({where:{email:body.email}}).then(
+      function(user){
+        if(!!user){
+
+          var checkHachedPassword = bcrypt.hashSync(body.password,user.salt);
+          console.log(checkHachedPassword);
+          if(checkHachedPassword === user.password_hash){
+            res.send(user.toPublicJson());
+
+          }else{
+            res.status(404).json({error:"Wrong password"});
+          }
+        }else{
+            res.status(404).json({error:"No login found"});
+        }
+
+      },function(e){
+          res.status(500).json(e);
+      })
+  }else{
+    res.status(404).send();
+  }
+
+});
+
 app.post('/user', function(req,res){
   var body = req.body;
-  db.user.create(body).then(function(todo){
-    res.json(todo);
+  //db.user.beforeValidate(function(){});
+  db.user.create(body).then(function(user){
+    res.send(user.toPublicJson());
   },function(e){
     res.status(400).json(e);
   });
