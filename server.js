@@ -130,29 +130,18 @@ app.post('/user/login',function(req,res){
   body = _.pick(body,'email','password');
   if(body.hasOwnProperty('email')&& body.hasOwnProperty('password')){
 
-    db.user.findOne({where:{email:body.email}}).then(
+    db.user.authenticate(body).then(
       function(user){
-        if(!!user){
+        res.send(user.toPublicJson());
+      }, function(e){
 
-          var checkHachedPassword = bcrypt.hashSync(body.password,user.salt);
-          console.log(checkHachedPassword);
-          if(checkHachedPassword === user.password_hash){
-            res.send(user.toPublicJson());
-
-          }else{
-            res.status(404).json({error:"Wrong password"});
-          }
-        }else{
-            res.status(404).json({error:"No login found"});
-        }
-
-      },function(e){
-          res.status(500).json(e);
-      })
-  }else{
-    res.status(404).send();
+        res.status(401).json({error:"error"});
+      }
+    );
   }
-
+  else{
+    res.status(404).json({error:"No login found"})
+  }
 });
 
 app.post('/user', function(req,res){

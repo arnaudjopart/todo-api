@@ -1,7 +1,7 @@
 var bcrypt = require('bcrypt');
 var _ = require('underscore');
 module.exports=function(sequelize,DataTypes){
-  return sequelize.define('user',{
+  var user = sequelize.define('user',{
     email:{
       type:DataTypes.STRING,
       allowNull:false,
@@ -43,11 +43,39 @@ module.exports=function(sequelize,DataTypes){
         }
 
     },
-    instanceMethods:{
+    classMethods:{
+      authenticate: function(body){
+        return new Promise(function(resolve,reject)
+        {
+          user.findOne({where:{email:body.email}}).then(
+            function(user){
+              console.log("test");
+              if(!!user){
+                var checkHachedPassword = bcrypt.hashSync(body.password,user.salt);
+
+                if(checkHachedPassword === user.password_hash){
+                  resolve(user);
+
+                }else{
+                  return reject({error:"wrong password"});
+                }
+              }else{
+                  return reject({error:"wrong login"});
+              }
+
+            },function(){
+
+                reject({error:"something went wrong"});
+            });
+        });
+    }
+  },
+  instanceMethods:{
       toPublicJson:function(){
         var json = this.toJSON();
         return _.pick(json,'email','updatedAt','createdAt');
       }
     }
   });
+  return user;
 };
