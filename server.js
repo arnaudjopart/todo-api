@@ -2,7 +2,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
-var bcrypt = require('bcrypt');
+//var bcrypt = require('bcrypt');
+var bcrypt = require('bcryptjs');
 
 var app = express();
 
@@ -127,20 +128,18 @@ app.post('/user/login',function(req,res){
   var body = req.body;
 
   body = _.pick(body,'email','password');
-  if(body.hasOwnProperty('email')&& body.hasOwnProperty('password')){
+
 
     db.user.authenticate(body).then(
       function(user){
         res.header('Auth',user.generateToken('authentication')).send(user.toPublicJson());
       }, function(e){
 
-        res.status(401).json({error:"error"});
+        res.status(400).json(e);
       }
     );
-  }
-  else{
-    res.status(404).json({error:"No login found"})
-  }
+
+
 });
 
 app.post('/user', function(req,res){
@@ -152,7 +151,7 @@ app.post('/user', function(req,res){
     res.status(400).json(e);
   });
 })
-db.sequelize.sync({force:true}).then(function(){
+db.sequelize.sync().then(function(){
   app.listen(PORT,function(){
     console.log('Express listening on Port '+PORT+'!');
   });
