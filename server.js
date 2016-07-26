@@ -153,7 +153,7 @@ app.post('/user', function(req,res){
     res.status(400).json(e);
   });
 })
-db.sequelize.sync().then(function(){
+db.sequelize.sync({force:true}).then(function(){
   app.listen(PORT,function(){
     console.log('Express listening on Port '+PORT+'!');
   });
