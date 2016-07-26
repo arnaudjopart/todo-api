@@ -120,19 +120,16 @@ app.put('/todos/:id',function(req,res){
 
     });
 
-  //
-  // var todoId = parseInt(req.params.id,10);
-  //
-  // var matchedTodo = _.findWhere(todos,{id:todoId});
-  // if(matchedTodo){
-  //   _.extend(matchedTodo,validAttributes);
-  //   res.json(matchedTodo);
-  // }else{
-  //   res.status(404).json({"error":"no todo found with that id"});
-  // }
-
 });
 
+app.post('/user', function(req,res){
+  var body = req.body;
+  db.user.create(body).then(function(todo){
+    res.json(todo);
+  },function(e){
+    res.status(400).json(e);
+  });
+})
 db.sequelize.sync().then(function(){
   app.listen(PORT,function(){
     console.log('Express listening on Port '+PORT+'!');
