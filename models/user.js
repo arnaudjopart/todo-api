@@ -1,5 +1,5 @@
-//var bcrypt = require('bcrypt');
-var bcrypt = require('bcryptjs');
+var bcrypt = require('bcrypt');
+//var bcrypt = require('bcryptjs');
 var _ = require('underscore');
 var cryptojs = require('crypto-js');
 var jwt = require('jsonwebtoken');
@@ -77,12 +77,34 @@ module.exports=function(sequelize,DataTypes){
               reject({error:"email or password  missing"})
             }
         });
+    },
+    findByToken: function(token){
+      return new Promise(function(resolve,reject){
+        try{
+          var decodedJWT = jwt.verify(token,'azerty');
+          var bytes = cryptojs.AES.decrypt(decodedJWT.token,'abc123!@#');
+          var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+          user.findById(tokenData.id).then(
+            function(user){
+              if(user){
+                resolve(user);
+              }else{
+                reject();
+              }
+            }
+            ,function(e){
+              reject(e);
+            });
+        }catch(e){
+          reject(e);
+        }
+      });
     }
   },
   instanceMethods:{
       toPublicJson:function(){
         var json = this.toJSON();
-        return _.pick(json,'email','updatedAt','createdAt');
+        return _.pick(json,'id','email','updatedAt','createdAt');
       },
 
       generateToken : function (type){
