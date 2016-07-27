@@ -65,9 +65,13 @@ app.get('/',function(req,res){
 
 app.post('/todos',middleware.requireAuthentication,function(req,res){
   var body = req.body;
-  db.todo.create(body).then(function(resolveData){
-    console.log("todo created - "+resolveData.description);
-    res.json(resolveData);
+  db.todo.create(body).then(function(todo){
+
+    req.user.addTodo(todo).then(function(){
+      return todo;
+    }).then(function(todo){
+      res.json(todo.toJSON());
+    });
   },function(e){
     console.log(e);
     res.status(400).json(e);

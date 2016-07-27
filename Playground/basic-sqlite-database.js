@@ -1,7 +1,7 @@
 var Sequelize = require('sequelize');
 var sequelize = new Sequelize(undefined,undefined,undefined,{
   'dialect':'sqlite',
-  'storage':'basic-sqlite-database.sqlite'
+  'storage':__dirname+'/basic-sqlite-database.sqlite'
 });
 
 var Todo = sequelize.define('todo',{
@@ -19,14 +19,33 @@ var Todo = sequelize.define('todo',{
   }
 });
 
+var User = sequelize.define('user',{
+  email:Sequelize.STRING
+});
+Todo.belongsTo(User);
+User.hasMany(Todo);
 sequelize.sync().then(function(){
   console.log('Everything is synced');
-  return Todo.findById(3);
-}).then(function(todo){
-  console.log(todo.toJSON());
-}).catch(function(e){
-  console.log("No todo found.");
+  User.findById(1).then(function(user){
+    user.getTodos({where:{completed:true}}).then(function(todos){
+      todos.forEach(function(todo){
+        console.log(todo.toJSON());
+      });
+    });
+  });
+  // User.create({
+  //   email:"andrew@example.com"}).then(function(){
+  //     return Todo.create({
+  //       description:"Clean yard"
+  //     });
+  //   }).then(function(todo){
+  //     User.findById(1).then(function(user){
+  //       user.addTodo(todo);
+  //     });
+  //   });
 });
+
+
   // Todo.create({
   //   description: 'Take out trash'
   // }).then(function(todo){
