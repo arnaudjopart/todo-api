@@ -87,6 +87,7 @@ module.exports=function(sequelize,DataTypes){
           user.findById(tokenData.id).then(
             function(user){
               if(user){
+                console.log(user);
                 resolve(user);
               }else{
                 reject();
@@ -114,6 +115,7 @@ module.exports=function(sequelize,DataTypes){
         }
         try{
           var stringData = JSON.stringify({id:this.get('id'),type:type});
+          //console.log(stringData);
           var encryptedData = cryptojs.AES.encrypt(stringData,'abc123!@#').toString();
           var token = jwt.sign({
             token:encryptedData
