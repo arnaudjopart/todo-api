@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.get('/todos',middleware.requireAuthentication,function(req,res){
   var query = req.query;
   var where ={};
-
+  where.userId = req.user.get('id');
   if(query.hasOwnProperty('completed') && query.completed === 'true'){
     where.completed = true;
   }
@@ -42,18 +42,20 @@ app.get('/todos',middleware.requireAuthentication,function(req,res){
 });
 
 app.get('/todos/:id',middleware.requireAuthentication,function(req,res){
+  var where={};
+  where.userId = req.user.get('id');
+  where.id = parseInt(req.params.id,10);
 
-  var todoId = parseInt(req.params.id,10);
+  db.todo.findOne({where:where}).then(
+    function(todo){
+      if(!!todo){
+        res.json(todo);
+      }else{
+        res.status(404).send();
+      }
 
-  db.todo.findById(todoId).then(function(todo){
-    if(!!todo){
-      res.json(todo);
-    }else{
-      res.status(404).send();
-    }
-
-  },function(e){
-      res.status(400).json(e);
+  },function(){
+    res.status(404).send();
   });
 })
 
@@ -81,12 +83,15 @@ app.post('/todos',middleware.requireAuthentication,function(req,res){
 });
 
 app.delete('/todos/:id',middleware.requireAuthentication,function(req,res){
-  var todoId = parseInt(req.params.id,10);
-  db.todo.destroy({where:{'id':todoId}}).then(function(rowsDestoyed){
+  var where ={};
+  where.userId = req.user.get('id');
+  where.id = parseInt(req.params.id,10);
+
+  db.todo.destroy({where:where}).then(function(rowsDestoyed){
     if(rowsDestoyed===0){
       res.status(404).json({error:"No todo to destroy"});
     }else{
-      res.send("Todo n° "+todoId+" is removed");
+      res.send("Todo n° "+where.id+" is removed");
     }
 
   },function(e){
@@ -97,6 +102,10 @@ app.delete('/todos/:id',middleware.requireAuthentication,function(req,res){
 app.put('/todos/:id',middleware.requireAuthentication,function(req,res){
   var body = req.body;
   var todoId = parseInt(req.params.id,10);
+  var where ={};
+
+  where.userId = req.user.get('id');
+  where.id = parseInt(req.params.id,10);
 
   body = _.pick(body,'description','completed');
   var validAttributes={};
@@ -109,7 +118,7 @@ app.put('/todos/:id',middleware.requireAuthentication,function(req,res){
     res.status(400).send();
   };
 
-  db.todo.findById(todoId).then(
+  db.todo.findOne({where:where}).then(
     function(todo){
       if(!!todo){
         return todo.update(validAttributes);
